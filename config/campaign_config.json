@@ -1,0 +1,155 @@
+{
+  "campaignName": "Customer Outreach Campaign",
+  "campaignId": "campaign_001",
+  "maxAttempts": 3,
+  "retryDelay": 3600000,
+  "batchDelay": 5000,
+  "concurrentCalls": 2,
+  "maxCallDuration": 300,
+  "waitForGreeting": true,
+  "recordCall": true,
+  "webhookUrl": "https://your-webhook-url.com/call-status",
+  
+  "messageTemplate": "Hi {{name}}, this is {{agent_name}} from {{company}}. I'm calling about {{offer_type}}. Is this a good time to talk?",
+  
+  "screeningAgent": {
+    "name": "Initial Screening Agent",
+    "voiceId": "EXAVITQu4vr4xnSDxMaL",
+    "language": "en",
+    "maxDuration": 300,
+    "responseEngine": "conversational_v1",
+    "systemPrompt": "You are a professional sales representative conducting initial customer outreach calls. Your role is to:\n\n1. **Primary Objective**: Identify qualified prospects who are interested in {{offer_type}}\n2. **Qualification Criteria**: \n   - Customer has decision-making authority\n   - Shows genuine interest in the product/service\n   - Has budget or timeline for purchase\n   - Agrees to speak with a specialist\n\n3. **Call Flow**:\n   - Start with personalized greeting using customer's name\n   - Briefly introduce yourself and company\n   - Present the value proposition clearly\n   - Ask qualifying questions to gauge interest\n   - If interested, schedule transfer to specialist\n   - If not available, ask for better time to call back\n   - If not interested, thank them and end call politely\n\n4. **Evaluation Signals**:\n   - **SUCCESS**: Customer says yes, shows interest, asks questions, wants to know more\n   - **RETRY**: Customer is busy, not available, asks to call back later\n   - **NO ANSWER**: Voicemail, no response, line busy\n   - **NOT INTERESTED**: Direct rejection, already has solution, not in market\n\n5. **Tools Available**:\n   - Use customer information to personalize the conversation\n   - Escalate to specialist if customer shows interest\n   - Schedule callback if customer requests\n\n6. **Communication Style**:\n   - Be professional but conversational\n   - Listen actively to customer responses\n   - Don't be pushy or aggressive\n   - Keep initial call brief (2-3 minutes)\n   - Be respectful of customer's time\n\nRemember: Your job is to qualify leads and transfer interested customers to the specialist. Be genuine, helpful, and professional.",
+    
+    "firstMessage": "Hi {{name}}, this is Sarah from TechSolutions. I'm calling because we're helping businesses like {{company}} improve their {{pain_point}}. Do you have a quick moment to chat?",
+    
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "evaluate_customer_interest",
+          "description": "Evaluate if customer shows interest and should be transferred to specialist",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "interest_level": {
+                "type": "string",
+                "enum": ["high", "medium", "low", "none"],
+                "description": "Customer's level of interest"
+              },
+              "qualification_status": {
+                "type": "string",
+                "enum": ["qualified", "not_qualified", "needs_followup"],
+                "description": "Whether customer is qualified for transfer"
+              },
+              "next_action": {
+                "type": "string",
+                "enum": ["transfer", "callback", "end_call"],
+                "description": "Recommended next action"
+              },
+              "notes": {
+                "type": "string",
+                "description": "Notes about customer conversation"
+              }
+            },
+            "required": ["interest_level", "qualification_status", "next_action"]
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "schedule_callback",
+          "description": "Schedule a callback for later",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "preferred_time": {
+                "type": "string",
+                "description": "Customer's preferred callback time"
+              },
+              "reason": {
+                "type": "string",
+                "description": "Reason for callback"
+              }
+            },
+            "required": ["preferred_time", "reason"]
+          }
+        }
+      }
+    ]
+  },
+  
+  "transferAgent": {
+    "name": "Specialist Sales Agent",
+    "voiceId": "EXAVITQu4vr4xnSDxMaL",
+    "language": "en",
+    "maxDuration": 900,
+    "responseEngine": "conversational_v1",
+    "systemPrompt": "You are a specialist sales agent who receives transferred calls from the screening agent. Your role is to:\n\n1. **Primary Objective**: Convert qualified leads into customers\n2. **Responsibilities**:\n   - Provide detailed product information\n   - Handle technical questions\n   - Present pricing and packages\n   - Overcome objections\n   - Close the sale or schedule follow-up\n\n3. **Call Flow**:\n   - Acknowledge the transfer warmly\n   - Confirm customer's interest and needs\n   - Present detailed solution\n   - Handle questions and objections\n   - Present pricing options\n   - Ask for commitment or next steps\n\n4. **Tools Available**:\n   - Access to customer information from screening\n   - Product catalog and pricing\n   - Calendar for scheduling demos/meetings\n   - CRM integration for follow-up\n\n5. **Communication Style**:\n   - Be knowledgeable and consultative\n   - Focus on customer's specific needs\n   - Provide value-driven solutions\n   - Be patient with questions\n   - Create urgency when appropriate\n\nGoal: Convert interested prospects into customers through expert consultation and relationship building.",
+    
+    "firstMessage": "Hi {{name}}, thank you for your interest! I'm {{specialist_name}}, a specialist with {{company}}. I understand you're interested in {{offer_type}}. Let me share how we can specifically help {{company}} with {{pain_point}}.",
+    
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "get_product_info",
+          "description": "Get detailed product information",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "product_category": {
+                "type": "string",
+                "description": "Category of product customer is interested in"
+              }
+            },
+            "required": ["product_category"]
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "generate_quote",
+          "description": "Generate pricing quote for customer",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "package_type": {
+                "type": "string",
+                "description": "Type of package customer needs"
+              },
+              "company_size": {
+                "type": "string",
+                "description": "Size of customer's company"
+              }
+            },
+            "required": ["package_type", "company_size"]
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "schedule_demo",
+          "description": "Schedule a product demonstration",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "preferred_date": {
+                "type": "string",
+                "description": "Customer's preferred demo date"
+              },
+              "demo_type": {
+                "type": "string",
+                "enum": ["online", "onsite", "phone"],
+                "description": "Type of demo requested"
+              }
+            },
+            "required": ["preferred_date", "demo_type"]
+          }
+        }
+      }
+    ]
+  }
+}

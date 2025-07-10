@@ -1,0 +1,18 @@
+[
+  {
+    "id": "cust_001",
+    "name": "Obaid Aqeel",
+    "company": "ABC Corp",
+    "phone": "+491745945171",
+    "email": "obaid3035@gmail.com",
+    "job_title": "IT Director",
+    "company_size": "50-200 employees",
+    "industry": "Technology",
+    "pain_point": "outdated software systems",
+    "offer_type": "cloud migration services",
+    "previous_contact": false,
+    "best_time_to_call": "9 AM - 5 PM EST",
+    "timezone": "EST",
+    "notes": "Expressed interest in cloud solutions at trade show"
+  }
+]
