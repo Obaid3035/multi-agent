@@ -35,7 +35,6 @@ class VoiceCampaignManager {
         }
     }
 
-    // Make a phone call to customer
     async makeCall(agentId, customer, config, attemptNumber = 1) {
         
         try {
@@ -81,7 +80,6 @@ class VoiceCampaignManager {
         }
     }
 
-    // Monitor call progress and determine outcome
     async monitorCall(conversationId, maxDuration) {
         const startTime = Date.now();
         const pollInterval = 5000; // Poll every 5 seconds
@@ -99,12 +97,10 @@ class VoiceCampaignManager {
 
                 console.log(`📞 Call status: ${conversation.status} - Last message: ${conversation.last_message?.content || 'N/A'}`);
                 
-                // Check if call is completed
                 if (conversation.status === 'completed' || conversation.status === 'ended') {
                     return await this.evaluateCallOutcome(conversation);
                 }
 
-                // Check if call failed
                 if (conversation.status === 'failed' || conversation.status === 'error') {
                     return {
                         status: 'failed',
@@ -114,7 +110,6 @@ class VoiceCampaignManager {
                     };
                 }
 
-                // Wait before next poll
                 await this.sleep(pollInterval);
 
             } catch (error) {
@@ -123,7 +118,6 @@ class VoiceCampaignManager {
             }
         }
 
-        // Call timed out
         return {
             status: 'timeout',
             reason: 'Call exceeded maximum duration',
@@ -132,7 +126,6 @@ class VoiceCampaignManager {
         };
     }
 
-    // Evaluate call outcome using AI analysis
     async evaluateCallOutcome(conversation) {
         try {
             const transcript = conversation.transcript || [];
@@ -222,7 +215,6 @@ class VoiceCampaignManager {
         }
     }
 
-    // Run campaign for a single customer
     async runCustomerCampaign(customer, config, screeningAgentId, transferAgentId) {
         const customerKey = `${customer.phone}_${customer.id || customer.name}`;
         
@@ -254,7 +246,6 @@ class VoiceCampaignManager {
         return { status: 'failed', outcome: 'max_attempts_reached' };
     }
 
-    // Run full campaign
     async runCampaign(configPath, customerListPath) {
         try {
             console.log('🚀 Starting voice campaign...');
@@ -286,13 +277,11 @@ class VoiceCampaignManager {
                 const batchResults = await Promise.all(batchPromises);
                 results.push(...batchResults);
                 
-                // Delay between batches
                 if (i + concurrentCalls < customers.length) {
                     await this.sleep(config.batchDelay || 5000);
                 }
             }
             
-            // Generate campaign report
             await this.generateCampaignReport(config, results);
             
             console.log('🎉 Campaign completed!');
@@ -304,7 +293,6 @@ class VoiceCampaignManager {
         }
     }
 
-    // Log call result
     async logCallResult(customer, result, attemptNumber) {
         const logEntry = {
             timestamp: new Date().toISOString(),

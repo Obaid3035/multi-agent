@@ -6,15 +6,12 @@
   "batchDelay": 5000,
   "concurrentCalls": 2,
   "maxCallDuration": 300,
-  "waitForGreeting": true,
-  "recordCall": true,
-  "webhookUrl": "https://your-webhook-url.com/call-status",
   
   "messageTemplate": "Hi {{name}}, this is {{agent_name}} from {{company}}. I'm calling about {{offer_type}}. Is this a good time to talk?",
   
   "screeningAgent": {
     "name": "Initial Screening Agent",
-    "voiceId": "EXAVITQu4vr4xnSDxMaL",
+    "voiceId": "insert_voice_id_here",
     "language": "en",
     "maxDuration": 300,
     "responseEngine": "conversational_v1",
@@ -81,7 +78,7 @@
   
   "transferAgent": {
     "name": "Specialist Sales Agent",
-    "voiceId": "EXAVITQu4vr4xnSDxMaL",
+    "voiceId": "insert_voice_id_here",
     "language": "en",
     "maxDuration": 900,
     "responseEngine": "conversational_v1",
