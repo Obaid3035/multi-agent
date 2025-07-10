@@ -40,8 +40,8 @@ class VoiceCampaignManager {
         try {
             
             console.log(`📞 Calling ${customer.name} (${customer.phone}) - Attempt ${attemptNumber}/${config.maxAttempts}`);
-            
         
+    
 
             const response = await axios.post(
                 `${this.baseURL}/convai/twilio/outbound-call`,
@@ -98,7 +98,7 @@ class VoiceCampaignManager {
                 console.log(`📞 Call status: ${conversation.status} - Last message: ${conversation.last_message?.content || 'N/A'}`);
                 
                 if (conversation.status === 'completed' || conversation.status === 'ended') {
-                    return await this.evaluateCallOutcome(conversation);
+                    return await this.determineCallOutcome(conversation);
                 }
 
                 if (conversation.status === 'failed' || conversation.status === 'error') {
@@ -126,94 +126,33 @@ class VoiceCampaignManager {
         };
     }
 
-    async evaluateCallOutcome(conversation) {
-        try {
-            const transcript = conversation.transcript || [];
-            const lastUserMessage = transcript.filter(msg => msg.role === 'user').pop();
-            const lastAgentMessage = transcript.filter(msg => msg.role === 'assistant').pop();
-
-            const userText = lastUserMessage?.content?.toLowerCase() || '';
-            const agentText = lastAgentMessage?.content?.toLowerCase() || '';
-
-            const successIndicators = [
-                'yes', 'interested', 'tell me more', 'sounds good', 
-                'when', 'how much', 'schedule', 'appointment'
-            ];
-
-            const retryIndicators = [
-                'not available', 'busy', 'call back', 'not home',
-                'bad time', 'later', 'not interested right now'
-            ];
-
-            const noAnswerIndicators = [
-                'no answer', 'voicemail', 'busy signal', 'no response'
-            ];
-
-            // Probably we will OpenAI API to analyze the transcript
-            // For now, we will use simple keyword matching
-            // This can be replaced with a more sophisticated NLP model in the future
-
-            const isSuccessful = successIndicators.some(indicator => 
-                userText.includes(indicator) || agentText.includes(indicator)
-            );
-
-            const shouldRetry = retryIndicators.some(indicator => 
-                userText.includes(indicator) || agentText.includes(indicator)
-            );
-
-            const noAnswer = noAnswerIndicators.some(indicator => 
-                userText.includes(indicator) || agentText.includes(indicator)
-            ) || transcript.length < 3;
-
-            if (isSuccessful) {
-                return {
-                    status: 'success',
-                    reason: 'Customer showed interest',
-                    shouldRetry: false,
-                    shouldTransfer: true,
-                    transcript: transcript,
-                    timestamp: new Date().toISOString()
-                };
-            } else if (noAnswer) {
-                return {
-                    status: 'no_answer',
-                    reason: 'No one answered the call',
-                    shouldRetry: true,
-                    shouldTransfer: false,
-                    transcript: transcript,
-                    timestamp: new Date().toISOString()
-                };
-            } else if (shouldRetry) {
-                return {
-                    status: 'retry_later',
-                    reason: 'Customer requested to call back later',
-                    shouldRetry: true,
-                    shouldTransfer: false,
-                    transcript: transcript,
-                    timestamp: new Date().toISOString()
-                };
-            } else {
-                return {
-                    status: 'not_interested',
-                    reason: 'Customer not interested',
-                    shouldRetry: false,
-                    shouldTransfer: false,
-                    transcript: transcript,
-                    timestamp: new Date().toISOString()
-                };
-            }
-
-        } catch (error) {
-            console.error('Error evaluating call outcome:', error.message);
-            return {
-                status: 'evaluation_failed',
-                reason: 'Could not evaluate call outcome',
-                shouldRetry: true,
-                shouldTransfer: false,
-                timestamp: new Date().toISOString()
-            };
-        }
+    determineCallOutcome(conversation) {
+    const transcript = conversation.transcript || [];
+    const callDuration = conversation.duration || 0;
+    
+    // Very basic checks - the real intelligence is in ElevenLabs tools
+    
+    if (transcript.length < 2 || callDuration < 5) {
+        return {
+            status: 'no_answer',
+            reason: 'No one answered or call was too short',
+            shouldRetry: true,
+            shouldTransfer: false,
+            transcript: transcript,
+            timestamp: new Date().toISOString()
+        };
     }
+    
+    return {
+        status: 'completed',
+        reason: 'Call completed - outcome determined by ElevenLabs tools',
+        shouldRetry: false, 
+        shouldTransfer: false, 
+        transcript: transcript,
+        duration: callDuration,
+        timestamp: new Date().toISOString()
+    };
+}
 
     async runCustomerCampaign(customer, config, screeningAgentId, transferAgentId) {
         const customerKey = `${customer.phone}_${customer.id || customer.name}`;

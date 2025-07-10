@@ -49,7 +49,7 @@ Create `config/campaign_config.json`:
   "batchDelay": 5000,
   "maxCallDuration": 300
 }
-
+```
 ### 4. Add customer list
 
 Create `data/customers.json`:
@@ -90,7 +90,6 @@ The evaluation function analyzes the last user and agent messages in the transcr
   "status": "success",
   "reason": "Customer showed interest",
   "shouldRetry": false,
-  "shouldTransfer": true
 }
 ```
 ### Retry Logic
